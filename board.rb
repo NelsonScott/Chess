@@ -5,12 +5,12 @@ require_relative 'board_helper.rb'
 
 class Board
   attr_accessor :locations
-
+  attr_reader :modifier_hash
 
   def initialize(size = 8)
     #movements corresponding to each piece
     #also if it's a 'slider' or 'stepper'
-    modifer_hash = BoardHelper.get_modifiers
+    @modifier_hash = BoardHelper.get_modifiers
     @size = size
     ordered_pieces = BoardHelper.get_ordered
     move_type = BoardHelper.get_move_type
@@ -19,11 +19,11 @@ class Board
     [:white, :yellow].each do |color|
       (color == :yellow) ? (y_coord = 0) : (y_coord = 7)
 
-      ordered_pieces.each_with_index do |piece, x|
-        if (move_type[piece] == :step)
-          temp = SteppingPiece.new([y_coord, x], color, piece, self, modifer_hash[piece])
+      ordered_pieces.each_with_index do |piece_sym, x|
+        if (move_type[piece_sym] == :step)
+          temp = SteppingPiece.new([y_coord, x], color, piece_sym, self, @modifier_hash[piece_sym])
         else
-          temp = SlidingPiece.new([y_coord, x], color, piece, self, modifer_hash[piece])
+          temp = SlidingPiece.new([y_coord, x], color, piece_sym, self, @modifier_hash[piece_sym])
         end
         @locations[y_coord][x] = temp
       end
@@ -39,8 +39,6 @@ class Board
     x2, y2 = m_end
     #commented out incheck? condition for now
     if piece.valid_move?([x2,y2]) && piece.moves.include?(m_end) #&& !in_check?(m_start, m_end)
-      p "m start: #{m_start}"
-      p "m end: #{m_end}"
       move(m_start, m_end)
     else
       puts "Invalid move."
@@ -48,7 +46,6 @@ class Board
   end
 
   def move(m_start, m_end)
-    p "move called"
     row_fin, col_fin = m_end
     row_beg, col_beg = m_start
     self[m_start].pos = m_end
@@ -100,19 +97,26 @@ class Board
 
   def deep_dup
     #rethink this
-    # deep_dupped = Array.new(@size) { Array.new (@size) {nil} }
-    # self.locations.each_with_index do |row, y|
-    #   row.each do |piece, x|
-    #tTEST before IMPLEMENTING THIS
-    #   if piece.class ==
-    #   temp = SteppingPiece.new([y_coord, x], color, piece, self, modifer_hash[piece])
-    # else
-    #   temp = SlidingPiece.new([y_coord, x], color, piece, self, modifer_hash[piece])
-    #
-    #   dupped =
-    #   deep_dupped.locations[y][x]
-    # end
-    # end
+    dupped_board = Board.new
+    dupped_arr = Array.new(@size) { Array.new (@size) {nil} }
+    @locations.each_with_index do |row, idx1|
+      row.each_with_index do |piece, idx2|
+        if SteppingPiece == piece.class
+          dupped_piece = SteppingPiece.new(piece.pos, piece.color,
+          piece.sym, dupped_board, @modifier_hash[piece.sym])
+        elsif SlidingPiece == piece.class
+          dupped_piece = SlidingPiece.new(piece.pos, piece.color,
+          piece.sym, dupped_board, @modifier_hash[piece.sym])
+        else
+          #pawn class
+        end
+
+        dupped_arr[idx1][idx2] = dupped_piece
+      end
+    end
+
+    dupped_board.locations = dupped_arr
+    dupped_board
   end
 
   def inspect
