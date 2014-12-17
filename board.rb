@@ -1,4 +1,3 @@
-# encoding: utf-8
 require 'colorize'
 require_relative 'chess_piece.rb'
 require_relative 'board_helper.rb'
@@ -19,6 +18,14 @@ class Board
     [:white, :yellow].each do |color|
       (color == :yellow) ? (y_coord = 0) : (y_coord = 7)
 
+      #initialize all the pawns
+      y_coord == 0 ? (pawn_y = 1) : (pawn_y = 6)
+      size.times do |col|
+        @locations[pawn_y][col] = Pawn.new([pawn_y, col], color,
+        :p, self, @modifier_hash[:p])
+      end
+
+      #initialize the other pieces
       ordered_pieces.each_with_index do |piece_sym, x|
         if (move_type[piece_sym] == :step)
           temp = SteppingPiece.new([y_coord, x], color, piece_sym, self, @modifier_hash[piece_sym])
@@ -27,7 +34,6 @@ class Board
         end
         @locations[y_coord][x] = temp
       end
-
     end
   end
 
@@ -38,7 +44,10 @@ class Board
 
     x2, y2 = m_end
     #commented out incheck? condition for now
-    if piece.valid_move?([x2,y2]) && piece.moves.include?(m_end) #&& !in_check?(m_start, m_end)
+    #Refactor
+    #make valid_move call just in board
+    #make movespace check for intersection all at once, same team or otherwise
+    if piece.valid_move?([x2,y2]) && piece.moves.include?(m_end) && !in_check?(m_start, m_end)
       move(m_start, m_end)
     else
       puts "Invalid move."
@@ -46,6 +55,7 @@ class Board
   end
 
   def move(m_start, m_end)
+    puts "Trying to move"
     row_fin, col_fin = m_end
     row_beg, col_beg = m_start
     self[m_start].pos = m_end
@@ -62,41 +72,42 @@ class Board
   def in_range(m_arr)
     range = (0...@size)
     return true if (range.include?(m_arr[0]) && range.include?(m_arr[1]))
-
+    p "in range returned false"
     false
   end
 
   def in_check?(m_start, m_end)
+    #testing to make pawn run
+    return false
     #have not finished, need to revist
-    # color = @locations[m_start].color
-    # dupped_board = deep_dup
-    # dupped_board.move(m_start, m_end)
-    #
-    # king_pos = []
-    # dupped_board.locations.each do |row|
-    #   row.each do |piece|
-    #     if piece.sym == :kg && piece.color == color
-    #       king_pos = piece.pos
-    #     end
-    #   end
-    # end
-    #
-    # dupped_board.locations.each do |row|
-    #   row.each do |piece|
-    #     if !piece.nil? && piece.color != color
-    #       potential = piece.moves
-    #       if potential.include?(king_pos)
-    #         return true
-    #       end
-    #     end
-    #   end
-    # end
-    #
-    # false
+    color = self[m_start].color
+    dupped_board = deep_dup
+    dupped_board.move(m_start, m_end)
+
+    king_pos = []
+    dupped_board.locations.each do |row|
+      row.each do |piece|
+        if !piece.nil? && piece.sym == :kg && piece.color == color
+          king_pos = piece.pos
+        end
+      end
+    end
+
+    dupped_board.locations.each do |row|
+      row.each do |piece|
+        if !piece.nil? && piece.color != color
+          potential = piece.moves
+          if potential.include?(king_pos)
+            return true
+          end
+        end
+      end
+    end
+
+    false
   end
 
   def deep_dup
-    #rethink this
     dupped_board = Board.new
     dupped_arr = Array.new(@size) { Array.new (@size) {nil} }
     @locations.each_with_index do |row, idx1|
@@ -107,8 +118,11 @@ class Board
         elsif SlidingPiece == piece.class
           dupped_piece = SlidingPiece.new(piece.pos, piece.color,
           piece.sym, dupped_board, @modifier_hash[piece.sym])
+        elsif Pawn == piece.class
+          dupped_piece = Pawn.new(piece.pos, piece.color,
+          piece.sym, dupped_board, @modifier_hash[piece.sym])
         else
-          #pawn class
+          #nil, do nothing
         end
 
         dupped_arr[idx1][idx2] = dupped_piece
@@ -120,7 +134,7 @@ class Board
   end
 
   def inspect
-    images = {:r => "♜", :kn => "♞", :b => "♝", :q => "♛", :kg => "♚"}
+    images = {:r => "♜", :kn => "♞", :b => "♝", :q => "♛", :kg => "♚", :p => "♙"}
 
     i = 0
     @locations.each do |row|

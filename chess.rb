@@ -6,6 +6,7 @@ class Chess
     puts "\nWelcome to Chess"
     puts "To exit, press 'q'"
     loop do
+      # system "clear" #or system "cls"
       b.inspect
       puts "\nPlease enter the coordinates of the piece to move."
       start = get_input

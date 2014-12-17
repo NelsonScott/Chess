@@ -1,4 +1,5 @@
 class BoardHelper
+
   def self.get_modifiers
     diagonals = [[1, 1], [-1, -1], [1, -1], [-1, 1]]
     orthagonals = [[0,1],[0, -1],[1, 0],[-1, 0]]
@@ -7,6 +8,8 @@ class BoardHelper
 
     knight_offsets = [[1, -2], [2, -1], [2, 1], [1, 2],
                     [-1, 2], [-2, 1], [-2, -1], [-1, -2]]
+
+    pawn_offsets = [[-1, 0],[-2, 0],[-1, -1], [-1, 1]]
     queen_directions = diagonals + orthagonals
     bishop_directions = diagonals
     rook_directions = orthagonals
@@ -17,7 +20,7 @@ class BoardHelper
     @modifiers[:b] = bishop_directions
     @modifiers[:r] = rook_directions
     @modifiers[:kn] = knight_offsets
-    #still need pawn, remember
+    @modifiers[:p] = pawn_offsets
 
     @modifiers
   end
@@ -28,6 +31,6 @@ class BoardHelper
 
   def self.get_move_type
     {:r => :slide, :kn => :step, :b => :slide,
-      :q => :slide, :kg => :step}
+      :q => :slide, :kg => :step, :p => :step}
   end
 end
