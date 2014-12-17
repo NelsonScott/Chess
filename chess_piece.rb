@@ -12,11 +12,19 @@ class Piece
   end
 
   def valid?(move)
+    p "in range? #{@board_object.in_range(move)}"
+    p "does not intersect sames? #{!intersects_same?(move)}"
     @board_object.in_range(move) && !intersects_same?(move)
   end
 
   def intersects_same?(move)
-    !@board_object[move].nil? && (@board_object[move].color == @color)
+
+    if @board_object[move].nil?
+      return false
+    else
+      return (@board_object[move].color == @color)
+    end
+
   end
 
   def intersects_other?(move)

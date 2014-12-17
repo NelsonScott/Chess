@@ -1,4 +1,4 @@
-class Modifiers
+class BoardHelper
   def self.get_modifiers
     diagonals = [[1, 1], [-1, -1], [1, -1], [-1, 1]]
     orthagonals = [[0,1],[0, -1],[1, 0],[-1, 0]]
