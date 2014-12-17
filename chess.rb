@@ -1,5 +1,8 @@
+require 'yaml'
+
 class Piece
   attr_reader :sym, :color
+  attr_accessor :pos
   def initialize(pos, color, sym, board_object)
     @pos = pos
     @color = color
@@ -31,7 +34,6 @@ class Piece
 end
 
 class SteppingPiece < Piece
-  attr_accessor :pos
   def initialize(pos, color, sym, board_object, offsets)
     super(pos, color, sym, board_object)
     @offsets = offsets
@@ -46,7 +48,6 @@ class SteppingPiece < Piece
 end
 
 class SlidingPiece < Piece
-  attr_reader :color
   def initialize(pos, color, sym, board_object, directions)
     super(pos, color, sym, board_object)
     @directions = directions
@@ -108,6 +109,7 @@ class Board
   end
 
   def move(m_start, m_end)
+    @locations[m_start].pos = m_end
     @locations[m_start], @locations[m_end] = nil, @locations[m_start]
   end
 
@@ -126,16 +128,48 @@ class Board
   def in_check?(m_start, m_end)
     color = @locations[m_start].color
     dupped_board = deep_dup
-
     dupped_board.move(m_start, m_end)
+
+    king_pos = []
+    dupped_board.locations.each do |row|
+      row.each do |piece|
+        if piece.sym == :king && piece.color == color
+          king_pos = piece.pos
+        end
+      end
+    end
+
 
     dupped_board.locations.each do |row|
       row.each do |piece|
         if !piece.nil? && piece.color != color
           potential = piece.moves
+          if potential.include?(king_pos)
+            return true
+          end
         end
       end
     end
+
+    false
+  end
+
+  def deep_dup
+    deep_dupped = Array.new(@size) { Array.new (@size) {nil} }
+    self.locations.each_with_index do |row, y|
+      row.each do |piece, x|
+        #tTEST before IMPLEMENTING THIS
+      #   if piece.class ==
+      #   temp = SteppingPiece.new([y_coord, x], color, piece, self, modifer_hash[piece])
+      # else
+      #   temp = SlidingPiece.new([y_coord, x], color, piece, self, modifer_hash[piece])
+      #
+      #   dupped =
+      #   deep_dupped.locations[y][x]
+      # end
+    end
+      # temp = self.to_yaml
+      # YAML::load(temp)
   end
 
   def inspect
@@ -191,6 +225,13 @@ end
 
 b = Board.new
 b.inspect
+puts "orig: #{b.locations}"
+copy = b.deep_dup.locations
+puts "copy #{copy.locations}"
+ b.locations = nil
+ puts "cop2 #{copy.locations}"
+
+
 # rook1 = SteppingPiece.new([0,5], :black, :king, b, @modifiers[:king])
 # b.locations[0][5] = rook1
 # p b.locations[0][5]
