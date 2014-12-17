@@ -33,7 +33,6 @@ class SteppingPiece < Piece
   def initialize(pos, color, sym, board_object, offsets)
     super(pos, color, sym, board_object)
     @offsets = offsets
-
   end
 
   def moves
