@@ -11,9 +11,7 @@ class Piece
   def moves
   end
 
-  def valid?(move)
-    p "in range? #{@board_object.in_range(move)}"
-    p "does not intersect sames? #{!intersects_same?(move)}"
+  def valid_move?(move)
     @board_object.in_range(move) && !intersects_same?(move)
   end
 
@@ -46,7 +44,9 @@ class SteppingPiece < Piece
   def moves
     output = []
     @offsets.each {|offset| output << (offset.zip(@pos).map { |e| e.first + e.last })}
-    output.select{|move| valid?(move)}
+    # output.select{|move| valid_move?(move)}
+    ##ALREADY CHECK IF VALID!##
+    output
   end
 end
 
@@ -60,7 +60,7 @@ class SlidingPiece < Piece
     output = []
     @directions.each do |dir|
       candidate = [dir[0] + @pos[0], dir[1] + @pos[1]]
-      while valid?(candidate)
+      while valid_move?(candidate)
         output << candidate
         break if intersects_other?(candidate)
         candidate = [candidate[0] + dir[0], candidate[1] + dir[1]]

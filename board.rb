@@ -33,16 +33,14 @@ class Board
 
 
   def try_move(m_start, m_end)
-    p "Trying move"
     x1, y1 = m_start
-    p "x1: #{x1} y1: #{y1}"
     piece = @locations[x1][y1]
-    p "Original piece class: #{piece.sym}"
 
     x2, y2 = m_end
-    p "x2: #{x2} y2: #{y2}"
-    #commented out incheck condition for now
-    if piece.valid?([x2,y2]) #&& !in_check?(m_start, m_end)
+    #commented out incheck? condition for now
+    if piece.valid_move?([x2,y2]) && piece.moves.include?(m_end) #&& !in_check?(m_start, m_end)
+      p "m start: #{m_start}"
+      p "m end: #{m_end}"
       move(m_start, m_end)
     else
       puts "Invalid move."
@@ -50,24 +48,13 @@ class Board
   end
 
   def move(m_start, m_end)
-    p "m_start: #{m_start}"
-    p "m_end: #{m_end}"
-    p "Value at start location: #{self[m_start].class}"
-    p "Value of that .pos: #{self[m_start].pos}"
-    p "m_end: #{m_end}"
+    p "move called"
     row_fin, col_fin = m_end
     row_beg, col_beg = m_start
     self[m_start].pos = m_end
-    p "Set end location to start piece's position"
-    p "Value of start piece's pos: #{self[m_start].pos}"
+    #possibly refactor this to just self[] for each.
     @locations[row_fin][col_fin] = @locations[row_beg][col_beg]
     @locations[row_beg][col_beg] = nil
-    # self[m_end] = self[m_start]
-    # self[m_start] = nil
-
-    p "Value at the previous start: #{@locations[row_beg][col_beg].class}"
-    p "Value at the end: #{@locations[row_fin][col_fin].sym}"
-
   end
 
   def [](pos)
@@ -75,40 +62,40 @@ class Board
     @locations[x][y]
   end
 
-  def in_range(move)
+  def in_range(m_arr)
     range = (0...@size)
-    return true if (range.include?(move[0]) && range.include?(move[1]))
+    return true if (range.include?(m_arr[0]) && range.include?(m_arr[1]))
 
     false
   end
 
   def in_check?(m_start, m_end)
     #have not finished, need to revist
-    color = @locations[m_start].color
-    dupped_board = deep_dup
-    dupped_board.move(m_start, m_end)
-
-    king_pos = []
-    dupped_board.locations.each do |row|
-      row.each do |piece|
-        if piece.sym == :kg && piece.color == color
-          king_pos = piece.pos
-        end
-      end
-    end
-
-    dupped_board.locations.each do |row|
-      row.each do |piece|
-        if !piece.nil? && piece.color != color
-          potential = piece.moves
-          if potential.include?(king_pos)
-            return true
-          end
-        end
-      end
-    end
-
-    false
+    # color = @locations[m_start].color
+    # dupped_board = deep_dup
+    # dupped_board.move(m_start, m_end)
+    #
+    # king_pos = []
+    # dupped_board.locations.each do |row|
+    #   row.each do |piece|
+    #     if piece.sym == :kg && piece.color == color
+    #       king_pos = piece.pos
+    #     end
+    #   end
+    # end
+    #
+    # dupped_board.locations.each do |row|
+    #   row.each do |piece|
+    #     if !piece.nil? && piece.color != color
+    #       potential = piece.moves
+    #       if potential.include?(king_pos)
+    #         return true
+    #       end
+    #     end
+    #   end
+    # end
+    #
+    # false
   end
 
   def deep_dup
