@@ -9,7 +9,6 @@ class Piece
   end
 
   def moves
-    #fixme
   end
 
   def valid?(move)

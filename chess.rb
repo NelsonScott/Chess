@@ -1,3 +1,5 @@
+# encoding: utf-8
+require 'colorize'
 require_relative 'chess_piece.rb'
 require_relative 'modifiers.rb'
 
@@ -56,6 +58,7 @@ class Board
   end
 
   def in_check?(m_start, m_end)
+    #have not finished, need to revist
     color = @locations[m_start].color
     dupped_board = deep_dup
     dupped_board.move(m_start, m_end)
@@ -63,7 +66,7 @@ class Board
     king_pos = []
     dupped_board.locations.each do |row|
       row.each do |piece|
-        if piece.sym == :king && piece.color == color
+        if piece.sym == :kg && piece.color == color
           king_pos = piece.pos
         end
       end
@@ -84,6 +87,7 @@ class Board
   end
 
   def deep_dup
+    #rethink this
     # deep_dupped = Array.new(@size) { Array.new (@size) {nil} }
     # self.locations.each_with_index do |row, y|
     #   row.each do |piece, x|
@@ -100,15 +104,27 @@ class Board
   end
 
   def inspect
+    images = {:r => "♜", :kn => "♞", :b => "♝", :q => "♛", :kg => "♚"}
+
+    i = 0
     @locations.each do |row|
       row.each do |piece|
-        if piece.nil?
-          print " "
+        if i % 2 == 0
+          back = :red
         else
-          str = piece.sym.to_s
-          print str + " "
+          back = :black
         end
+
+        if piece.nil?
+          print "   ".colorize(:background => back)
+        else
+          str = images[piece.sym]
+          print " #{str} ".colorize(:color => :white, :background => back)
+        end
+
+        i+=1
       end
+      i+=1
       puts ""
     end
   end
