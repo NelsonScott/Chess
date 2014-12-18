@@ -47,7 +47,11 @@ class Board
     #Refactor
     #make valid_move call just in board
     #make movespace check for intersection all at once, same team or otherwise
-    if piece.valid_move?([x2,y2]) && piece.moves.include?(m_end) && !in_check?(m_start, m_end)
+
+    dupped_board = deep_dup
+    dupped_board.move(m_start, m_end)
+    if piece.valid_move?([x2,y2]) && piece.moves.include?(m_end) && !dupped_board.in_check?(self[m_start].color)
+
       move(m_start, m_end)
     else
       puts "Invalid move."
@@ -55,7 +59,6 @@ class Board
   end
 
   def move(m_start, m_end)
-    puts "Trying to move"
     row_fin, col_fin = m_end
     row_beg, col_beg = m_start
     self[m_start].pos = m_end
@@ -72,20 +75,13 @@ class Board
   def in_range(m_arr)
     range = (0...@size)
     return true if (range.include?(m_arr[0]) && range.include?(m_arr[1]))
-    p "in range returned false"
     false
   end
 
-  def in_check?(m_start, m_end)
-    #testing to make pawn run
-    return false
-    #have not finished, need to revist
-    color = self[m_start].color
-    dupped_board = deep_dup
-    dupped_board.move(m_start, m_end)
-
+  def in_check?(color)
+    #find position of king
     king_pos = []
-    dupped_board.locations.each do |row|
+    self.locations.each do |row|
       row.each do |piece|
         if !piece.nil? && piece.sym == :kg && piece.color == color
           king_pos = piece.pos
@@ -93,7 +89,8 @@ class Board
       end
     end
 
-    dupped_board.locations.each do |row|
+    #check to see if any potential move puts king in check
+    self.locations.each do |row|
       row.each do |piece|
         if !piece.nil? && piece.color != color
           potential = piece.moves
@@ -105,6 +102,24 @@ class Board
     end
 
     false
+  end
+
+  def checkmate?(color)
+    self.locations.each do |row|
+      row.each do |piece|
+        if !piece.nil? && piece.color == color
+          piece.moves.select{|m| piece.valid_move?(m) }.each do |mov|
+            dupped = deep_dup
+            dupped.move(piece.pos, mov)
+            if !dupped.in_check?(color)
+              return false
+            end
+          end
+        end
+      end
+    end
+
+    true
   end
 
   def deep_dup
@@ -137,7 +152,13 @@ class Board
     images = {:r => "♜", :kn => "♞", :b => "♝", :q => "♛", :kg => "♚", :p => "♙"}
 
     i = 0
-    @locations.each do |row|
+    print "  "
+    8.times do |iter|
+      print " #{iter} "
+    end
+    puts ""
+    @locations.each_with_index do |row, row_idx|
+      print "#{row_idx} "
       row.each do |piece|
         if i % 2 == 0
           back = :red

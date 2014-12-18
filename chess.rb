@@ -5,8 +5,34 @@ class Chess
     b = Board.new
     puts "\nWelcome to Chess"
     puts "To exit, press 'q'"
+
+    turns = [:white, :yellow]
+    i = 0
     loop do
-      # system "clear" #or system "cls"
+      system "clear" #or system "cls"
+      turn = turns[i % 2]
+      if turn == :white
+        puts "White player's turn"
+        if b.in_check?(turn)
+          puts "You are in check."
+          if b.checkmate?(turn)
+            puts "You have been checkmated."
+            b.inspect
+            exit
+          end
+        end
+      else
+        puts "Yellow player's turn"
+        if b.in_check?(turn)
+          puts "You are in check."
+          if b.checkmate?(turn)
+            puts "You have been checkmated."
+            b.inspect
+            exit
+          end
+        end
+      end
+
       b.inspect
       puts "\nPlease enter the coordinates of the piece to move."
       start = get_input
@@ -14,6 +40,7 @@ class Chess
       finish = get_input
 
       b.try_move(start, finish)
+      i+=1
     end
   end
 

@@ -12,18 +12,14 @@ class Piece
   end
 
   def valid_move?(move)
-    puts "valid move : #{move}"
     @board_object.in_range(move) && !intersects_same?(move)
   end
 
   def intersects_same?(move)
-    puts "inter : #{move}"
 
     if @board_object[move].nil?
-      p "found it was false for insterects same"
       return false
     else
-      p "found a piece it intersects"
       return (@board_object[move].color == @color)
     end
   end
@@ -90,22 +86,29 @@ class Pawn < SteppingPiece
     else
       @Offsets = [[-1, 0],[-2, 0],[-1, -1], [-1, 1]]
     end
-    
-    p "Offsets: #{@offsets}"
+
     #Change the y direction of the move offsets to account for the black player being on the
     #opposite side of the board.
 
     @offsets.each {|offset| output << (offset.zip(@pos).map { |e| e.first + e.last })}
 
     #Only allow diagonals if capture possible
-    p "Output last two for pawn: #{output[-2..-1]}"
     output[-2..-1].each do |my_position|
       if !intersects_other?(my_position)
-        output.delete(my_position)
+        idx = output.index(my_position)
+        output[idx] = nil
       end
     end
 
-    output
+    #Only allow forward move if destination is empty
+    output[0..1].each do |my_position|
+      if intersects_other?(my_position)
+        idx = output.index(my_position)
+        output[idx] = nil
+      end
+    end
+
+    output.reject(&:nil?)
   end
 
 end
